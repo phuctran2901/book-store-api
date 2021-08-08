@@ -3,7 +3,6 @@ const express = require('express');
 const Router = express.Router();
 const { register, login, getCurrentUser, loginAdmin } = require('../controllers/authController');
 const { checkCurrentUser } = require('../middleware/checkCurrentUser');
-const { verifyToken } = require('../middleware/verifyToken');
 
 Router.route('/register').post(register);
 Router.route('/login').post(login)

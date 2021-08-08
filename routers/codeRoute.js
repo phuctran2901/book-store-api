@@ -1,7 +1,9 @@
 const express = require('express');
-const { getAllCode, createCode, deleteOneCode, getOneCode, editOneCode } = require('../controllers/codeController');
+const { getAllCode, createCode, deleteOneCode, getOneCode, editOneCode, checkCode } = require('../controllers/codeController');
 const { verifyToken } = require('../middleware/verifyToken');
 const Router = express.Router();
+
+Router.route("/check").post(checkCode);
 
 Router.route('/').get(getAllCode);
 

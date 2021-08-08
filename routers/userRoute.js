@@ -5,11 +5,14 @@ const {
     editProfile,
     getAllUser,
     getOneUser,
-    addOneProductOrUpdateToCart,
+    addOneProductToCart,
     deleteProductToCart,
     deleteOneUser,
     searchUserByEmail,
-    changeRoleByAdmin } = require('../controllers/userController');
+    changeRoleByAdmin,
+    updateAllCart,
+    getAllCart
+} = require('../controllers/userController');
 const { verifyToken } = require('../middleware/verifyToken');
 
 Router.route('/').post(verifyToken, editProfile)
@@ -24,8 +27,11 @@ Router.route('/:userID').get(getOneUser);
 
 Router.route('/:userID').delete(deleteOneUser);
 // Cart
+Router.route("/cart/all").post(verifyToken, getAllCart);
 
-Router.route('/cart').post(verifyToken, addOneProductOrUpdateToCart);
+Router.route('/cart/update-all').post(verifyToken, updateAllCart);
+
+Router.route('/cart').post(verifyToken, addOneProductToCart);
 
 Router.route("/cart/:productID").delete(verifyToken, deleteProductToCart);
 

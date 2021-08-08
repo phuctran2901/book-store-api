@@ -11,12 +11,33 @@ exports.register = async (req, res, next) => {
             });
             res.end();
         }
-        const user = await User.create({ ...req.body });
-        const token = jwt.sign({ userID: user.id }, process.env.APP_SECERT);
-        res.status(200).json({
-            status: "success",
-            token: token
-        })
+        const newUser = await User.create({ ...req.body });
+        if (!newUser) {
+            res.json({
+                status: "failed",
+                messenger: "Đăng ký tài khoản thất bại"
+            })
+            res.end();
+        } else {
+            bycript.hash(newUser.password, 10, function (err, hash) {
+                if (err) {
+                    res.json({
+                        status: "failed",
+                        messenger: "Đăng ký tài khoản thất bại!"
+                    })
+                    return;
+                }
+                newUser.password = hash;
+                newUser.save(function (err, result) {
+                    const token = jwt.sign({ userID: result._id }, process.env.APP_SECERT);
+                    res.json({
+                        status: "success",
+                        user: result,
+                        token
+                    })
+                });
+            })
+        }
 
     }
     catch (err) {
@@ -27,16 +48,21 @@ exports.register = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
     try {
-        const user = await User.findOne({ email: req.body.email });
+        const user = await User.findOne({ email: req.body.email })
+            .populate("cart.product");
         if (!user) {
-            res.status(400).json({
+            res.json({
                 status: 'failed',
                 messenger: 'Email không hợp lệ'
             })
+            return;
         }
         if (bycript.compareSync(req.body.password, user.password)) {
             const token = jwt.sign({ userID: user.id }, process.env.APP_SECERT);
-            console.log(user)
+            const subTotal = user.cart.reduce((total, cart) => {
+                let price = cart.product.sale > 0 ? cart.product.price - (cart.product.sale / 100 * cart.product.price) : cart.product.price;
+                return total + price * cart.quantity;
+            }, 0);
             res.status(200).json({
                 status: "success",
                 token: token,
@@ -50,11 +76,15 @@ exports.login = async (req, res, next) => {
                     phone: user.phone,
                     image: user.image,
                     address: user.address
-                }
+                },
+                subTotal
             })
         }
         else {
-            console.log('Password sai');
+            res.json({
+                status: "failed",
+                messenger: "Sai email hoặc mật khẩu"
+            })
         }
     }
     catch (err) {
@@ -66,10 +96,16 @@ exports.getCurrentUser = async (req, res, next) => {
     try {
         const { userID } = req.user;
         if (userID) {
-            const user = await User.findById(userID);
+            const user = await User.findById(userID)
+                .populate("cart.product");
+            const subTotal = user.cart.reduce((total, cart) => {
+                let price = cart.product.sale > 0 ? cart.product.price - (cart.product.sale / 100 * cart.product.price) : cart.product.price;
+                return total + price * cart.quantity;
+            }, 0);
             res.status(200).json({
                 status: 'success',
-                user
+                user,
+                subTotal
             })
         }
     }
@@ -86,6 +122,7 @@ exports.loginAdmin = async (req, res, next) => {
                 status: 'failed',
                 messenger: "Không tìm thấy email"
             })
+            return;
         }
         if (bycript.compareSync(password, user.password)) {
             if (user.role === 'admin') {

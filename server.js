@@ -13,6 +13,7 @@ const userRouter = require('./routers/userRoute');
 const ordersRouter = require('./routers/ordersRoute');
 const codeRouter = require('./routers/codeRoute');
 const tnRouter = require('./routers/tnRoute');
+const postRouter = require("./routers/postRoute");
 // Cors
 app.use(cors());
 
@@ -26,6 +27,7 @@ app.use('/api/user', upload.array('userImage'), userRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/code', codeRouter);
 app.use('/api/tn', tnRouter);
+app.use('/api/post', upload.array("postImage"), postRouter);
 
 // Not found router
 app.use('*', function (req, res, next) {

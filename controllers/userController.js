@@ -9,6 +9,7 @@ exports.editProfile = async (req, res, next) => {
         const { userID } = req.user;
         const uploader = async (path) => await cloudinary.uploads(path, 'avatar');
         const data = JSON.parse(req.body.user);
+        const user = await User.findById(userID);
         let url = null;
         const files = req.files[0];
         if (files) {
@@ -17,12 +18,15 @@ exports.editProfile = async (req, res, next) => {
             data.image = url.url;
         }
         if (data.password) {
-            const user = await User.findById(userID);
-            user.password = data.password;
-            user.save();
+            bycript.hash(data.password, 10, function (err, hash) {
+                if (!err) {
+                    user.password = hash;
+                    user.save();
+                }
+            })
             delete data.password;
         }
-        const userUpdate = await User.findByIdAndUpdate(userID, data, { runValidators: true, new: true })
+        const userUpdate = await User.findByIdAndUpdate(userID, { ...data }, { runValidators: true, new: true })
         res.json({
             status: "success",
             user: userUpdate
@@ -115,23 +119,91 @@ exports.getOneUser = async (req, res, next) => {
 
 // Cart by user
 
-exports.addOneProductOrUpdateToCart = async (req, res, next) => {
+exports.addOneProductToCart = async (req, res, next) => {
     try {
         const { userID } = req.user;
         const data = req.body;
-        const user = await User.findById(userID);
-        let index = await lodash._.findIndex(user.cart, (cart) => cart.product == data.product);
-        if (index !== -1) {
-            user.cart[index] = data;
-            user.save();
-        } else {
+        let reqPrice = req.body.price;
+        const user = await User.findById(userID)
+            .populate("cart.product");
+        let index = await lodash._.findIndex(user.cart, (cart) => cart.product === data.product);
+        if (index === -1) {
+            delete data.price;
             user.cart.push(data);
-            user.save();
+            user.save(function (err, result) {
+                if (err) {
+                    res.json({
+                        status: "failed"
+                    })
+                    return;
+                }
+                const subTotal = result.cart.reduce((total, cart, index) => {
+                    if (index < result.cart.length - 1) {
+                        let price = cart.product.sale > 0 ? cart.product.price - (cart.product.sale / 100 * cart.product.price) : cart.product.price;
+                        return total + price * cart.quantity;
+                    }
+                    return total + reqPrice * cart.quantity;
+                }, 0);
+                const idCart = result.cart[result.cart.length - 1]._id;
+                res.json({
+                    status: "success",
+                    subTotal,
+                    idCart
+                })
+            });
         }
-        res.status(200).json({
-            status: "success",
-            user
+    }
+    catch (err) {
+        res.json({
+            status: "failed",
+            err
         })
+    }
+}
+
+exports.getAllCart = async (req, res) => {
+    try {
+        const { userID } = req.user;
+        const user = await User.findById(userID)
+            .populate("cart.product");
+        const listCart = user.cart;
+        res.json({
+            status: "success",
+            listCart
+        })
+    }
+    catch (err) {
+        res.json({
+            err,
+            status: "failed"
+        })
+    }
+}
+
+exports.updateAllCart = async (req, res) => {
+    try {
+        const { userID } = req.user;
+        const { newCart } = req.body;
+        const user = await User.findById(userID)
+            .populate("cart.product");
+        if (user) {
+            user.cart = newCart;
+            user.save(function (err, result) {
+                if (!err) {
+                    const subTotal = result.cart.reduce((total, cart) => {
+                        let price = cart.product.sale > 0 ? cart.product.price - (cart.product.sale / 100 * cart.product.price) : cart.product.price;
+                        return total + price * cart.quantity;
+                    }, 0);
+                    res.json({
+                        status: "success",
+                        result,
+                        subTotal
+                    })
+                } else {
+                    console.log(err);
+                }
+            })
+        }
     }
     catch (err) {
 
@@ -142,17 +214,26 @@ exports.deleteProductToCart = async (req, res, next) => {
     try {
         const { userID } = req.user;
         const { productID } = req.params;
-        const user = await User.findById(userID);
-        let index = await lodash._.findIndex(user.cart, (cart) => cart.product == productID);
+        const user = await User.findById(userID)
+            .populate("cart.product");
+        let index = await lodash._.findIndex(user.cart, (cart) => cart.product._id == productID);
         if (index !== -1) {
             user.cart.splice(index, 1);
-            user.save();
+            user.save(function (err, result) {
+                if (!err) {
+                    const subTotal = result.cart.reduce((total, cart) => {
+                        let price = cart.product.sale > 0 ? cart.product.price - (cart.product.sale / 100 * cart.product.price) : cart.product.price;
+                        return total + price * cart.quantity;
+                    }, 0);
+                    res.json({
+                        status: "success",
+                        subTotal
+                    })
+                }
+            });
         } else {
             console.log("ERR")
         }
-        res.status(200).json({
-            status: "success"
-        })
     }
     catch (err) {
 

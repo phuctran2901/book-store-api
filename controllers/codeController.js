@@ -20,7 +20,6 @@ exports.getAllCode = async (req, res) => {
 exports.createCode = async (req, res) => {
     try {
         const { userID } = req.user;
-        console.log(req.body)
         const admin = await User.findById(userID);
         if (admin.role === 'admin') {
             const code = await Code.create({
@@ -91,6 +90,27 @@ exports.editOneCode = async (req, res) => {
         })
     }
     catch {
+
+    }
+}
+
+exports.checkCode = async (req, res) => {
+    try {
+        const { code } = req.body;
+        const coupon = await Code.findOne({ code: code });
+        if (coupon) {
+            res.json({
+                status: "success",
+                coupon
+            })
+        } else {
+            res.json({
+                status: "failed",
+                messenger: "Mã giảm giá không tồn tại"
+            })
+        }
+    }
+    catch (err) {
 
     }
 }

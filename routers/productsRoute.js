@@ -8,11 +8,21 @@ const {
     getProductByPage,
     addReviewToProduct,
     searchKeywordText,
-    changeCategoryProduct } = require('../controllers/productController');
+    changeCategoryProduct,
+    getAllProduct,
+    searchProductByField,
+    filterByPrice } = require('../controllers/productController');
 const { verifyToken } = require('../middleware/verifyToken');
+
+Router.route("/filter-price").post(filterByPrice);
+
+Router.route("/all").get(getAllProduct);
 
 Router.route('/category').post(verifyToken, changeCategoryProduct);
 
+Router.route('/review/:productID').post(verifyToken, addReviewToProduct);
+
+Router.route("/search-field").post(searchProductByField);
 
 Router.route("/search").get(searchKeywordText);
 
@@ -23,8 +33,5 @@ Router.route('/:productID').get(getOneProduct);
 Router.route('/').post(verifyToken, createOneProducts);
 
 Router.route('/:productID').post(verifyToken, editProduct).delete(verifyToken, deleteOneProduct);
-
-Router.route('/review/:productID').post(verifyToken, addReviewToProduct);
-
 
 module.exports = Router;

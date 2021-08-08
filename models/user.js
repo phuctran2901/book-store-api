@@ -13,21 +13,21 @@ const userSchema = new mongoose.Schema({
             quantity: { type: Number, required: true }
         }
     ],
-    phone: { type: String, require: true },
+    phone: { type: String },
     address: { type: String }
 }, { timestamps: true })
 
 
-userSchema.pre('save', function (next) {
-    let user = this;
-    bycript.hash(user.password, 10, function (err, hash) {
-        if (!user) return next(err);
-        else {
-            user.password = hash;
-            next();
-        }
-    })
-})
+// userSchema.pre('save', function (next) {
+//     let user = this;
+//     bycript.hash(user.password, 10, function (err, hash) {
+//         if (!user) return next(err);
+//         else {
+//             user.password = hash;
+//             next();
+//         }
+//     })
+// })
 
 
 const User = mongoose.model('user', userSchema);
