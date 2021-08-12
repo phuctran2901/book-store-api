@@ -191,7 +191,8 @@ exports.addCommentToPost = async (req, res) => {
             } else {
                 res.json({
                     status: "success",
-                    result
+                    result,
+                    idCmt: comment._id
                 })
             }
         })
@@ -234,6 +235,40 @@ exports.replyComment = async (req, res) => {
     catch (err) {
         if (err) res.json({
             status: "failed",
+            err
+        })
+    }
+}
+
+exports.deleteComment = async (req, res) => {
+    try {
+        const { idPost, idCmt } = req.params;
+        const post = await Post.findById(idPost);
+        post.comment = post.comment.filter(cmt => {
+            id = cmt._id.toString();
+            return id !== idCmt;
+        });
+        post.save((err, result) => {
+            if (err) return res.json({
+                status: "failed",
+                messenger: "Xóa bình luận thất bại"
+            })
+            Comment.findByIdAndDelete(idCmt, {}, function (err, result) {
+                if (err) return res.json({
+                    status: "failed",
+                    messenger: "Xóa bình luận thất bại"
+                })
+                res.json({
+                    status: "success",
+                    messenger: "Xóa bình luận thành công"
+                })
+            })
+        })
+    }
+    catch (err) {
+        res.json({
+            status: "failed",
+            messenger: "Xóa bình luận thất bại",
             err
         })
     }

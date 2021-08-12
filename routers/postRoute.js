@@ -1,11 +1,13 @@
 const express = require("express");
-const { getAllPost, createOnePost, deletePost, findPostByTitle, getOnePost, updatePost, getPostByPage, addCommentToPost, replyComment } = require("../controllers/postController");
+const { getAllPost, createOnePost, deletePost, findPostByTitle, getOnePost, updatePost, getPostByPage, addCommentToPost, replyComment, deleteComment } = require("../controllers/postController");
 const Router = express.Router();
 const { verifyToken } = require("../middleware/verifyToken");
 
 Router.route("/replyCmt/:id").post(verifyToken, replyComment);
 
 Router.route("/comment/:id").post(verifyToken, addCommentToPost);
+
+Router.route("/:idPost/comment/:idCmt").delete(deleteComment);
 
 Router.route("/all").get(getAllPost);
 

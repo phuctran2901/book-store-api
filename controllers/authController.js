@@ -67,7 +67,7 @@ exports.login = async (req, res, next) => {
                 status: "success",
                 token: token,
                 user: {
-                    id: user._id,
+                    _id: user._id,
                     cart: user.cart,
                     email: user.email,
                     firstName: user.firstName,

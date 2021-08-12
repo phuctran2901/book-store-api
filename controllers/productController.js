@@ -328,10 +328,10 @@ exports.filterByPrice = async (req, res) => {
         const searchResult = await Product.find({
             $and: [
                 {
-                    price: { $lte: 500000 }
+                    price: { $lte: req.body.reqPrice.max }
                 },
                 {
-                    price: { $gt: req.body.reqPrice }
+                    price: { $gt: req.body.reqPrice.min }
                 }
             ]
         })
