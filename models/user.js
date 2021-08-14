@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
     lastName: { type: String, required: true },
     password: { type: String, required: true, trim: true, minLength: 6 },
     role: { type: String, required: true, default: "user" },
-    image: { type: String, default: "https://thumbs.dreamstime.com/b/default-avatar-profile-image-vector-social-media-user-icon-potrait-182347582.jpg" },
+    image: { type: String, default: "https://res.cloudinary.com/phuctran/image/upload/v1628940172/dev_setups/igykdyqbyrhfpyolnx2k.jpg" },
     cart: [
         {
             product: { type: mongoose.Schema.Types.ObjectId, ref: "products", required: true },
