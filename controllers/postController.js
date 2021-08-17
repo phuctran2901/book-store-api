@@ -117,6 +117,16 @@ exports.getOnePost = async (req, res) => {
                     path: "author",
                     select: "firstName lastName image"
                 }
+            })
+            .populate({
+                path: "comment._id",
+                populate: {
+                    path: "reply._idReply",
+                    populate: {
+                        path: "author",
+                        select: "firstName lastName image"
+                    }
+                }
             });
         res.json({
             status: "success",
@@ -207,18 +217,14 @@ exports.addCommentToPost = async (req, res) => {
 
 exports.replyComment = async (req, res) => {
     try {
-        const { userID } = req.user;
         const { id } = req.params;
-        const { content, date } = req.body;
-        const user = await User.findById(userID);
+        const { content, userID } = req.body;
         const cmt = await Comment.findById(id);
-        let replyCmt = {
+        const replyCmt = await Comment.create({
             content: content,
-            fullName: `${user.firstName} ${user.lastName}`,
-            avatar: user.image,
-            date: date
-        }
-        cmt.reply.unshift(replyCmt);
+            author: userID
+        })
+        cmt.reply.unshift({ _idReply: replyCmt._id });
         cmt.save(function (err, result) {
             if (err) res.json({
                 status: "failed",
@@ -227,7 +233,7 @@ exports.replyComment = async (req, res) => {
             else {
                 res.json({
                     status: "success",
-                    result
+                    replyCmt
                 })
             }
         });

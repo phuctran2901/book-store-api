@@ -6,10 +6,7 @@ const CommentSchema = new mongoose.Schema({
     content: { type: String, required: true },
     reply: [
         {
-            fullName: { type: String },
-            avatar: { type: String },
-            content: { type: String },
-            date: { type: Date }
+            _idReply: { type: mongoose.Schema.Types.ObjectId, ref: "Comment" }
         }
     ]
 }, { timestamps: true })
