@@ -18,7 +18,8 @@ const postRouter = require('./routers/postRoute')
 var corsOptions = {
   origin: [
     'https://bookstore-client-user.vercel.app',
-    'https://bookstore-client-dashboard.vercel.app'
+    'https://bookstore-client-dashboard.vercel.app',
+    'http://localhost:3000'
   ],
   optionsSuccessStatus: 200 // For legacy browser support
 }
