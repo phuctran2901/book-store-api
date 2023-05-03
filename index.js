@@ -16,7 +16,7 @@ const tnRouter = require('./routers/tnRoute')
 const postRouter = require('./routers/postRoute')
 // Cors
 app.use(cors())
-
+console.log('aa')
 //body parse
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
