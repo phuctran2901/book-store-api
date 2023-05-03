@@ -16,7 +16,10 @@ const tnRouter = require('./routers/tnRoute')
 const postRouter = require('./routers/postRoute')
 // Cors
 var corsOptions = {
-  origin: ['https://bookstore-client-user.vercel.app', 'http://localhost:3000'],
+  origin: [
+    'https://bookstore-client-user.vercel.app',
+    'https://bookstore-client-dashboard.vercel.app'
+  ],
   optionsSuccessStatus: 200 // For legacy browser support
 }
 app.use(cors(corsOptions))
