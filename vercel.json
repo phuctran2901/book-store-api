@@ -5,7 +5,6 @@
   "headers": [
     {
       "source": "/(.*)",
-      "dest": "./index.js",
       "headers": [
         {
           "key": "access-control-allow-origin",
